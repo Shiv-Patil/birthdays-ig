@@ -4,6 +4,17 @@ use std::io::{Read, Write};
 use std::collections::HashMap;
 use crate::structs;
 
+pub fn get_command() -> structs::command::Command {
+    let alias = &["remove", "erase", "wipe", "clear"];
+    structs::command::Command::new(
+        "delete", alias,
+        "Remove a birthday",
+        &format!("takes 1 required argument <name>. Additional arguments <names> to delete can also be provided for bulk deletion.\n\
+alias: {}", alias.join(", ")),
+        delete_command
+    )
+}
+
 fn delete_bithday(names: &[&str]) -> Result<String, std::io::Error> {
 
     let mut file = File::open("birthdays.json")?;
@@ -44,8 +55,7 @@ fn delete_bithday(names: &[&str]) -> Result<String, std::io::Error> {
     Ok(res)
 }
 
-pub fn delete_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
-    // Check that there is exactly one arguments
+fn delete_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() == 0 {
         return "\nCommand needs at least one argument <name>. Usage: delete <name1> <name2>[optional]...\n".to_owned();
     }

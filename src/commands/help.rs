@@ -1,7 +1,17 @@
 use crate::structs;
 
-pub fn help_command(bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
-    // Checks if there iare no arguments. If so, displays all available commands
+pub fn get_command() -> structs::command::Command {
+    let alias = &["info", "?", "what"];
+    structs::command::Command::new(
+        "help", alias,
+        "Get info about a particular command",
+        &format!("Gets information about a particular command. Takes the command as an argument.\n\
+alias: {}", alias.join(", ")),
+        help_command
+    )
+}
+
+fn help_command(bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() == 0 {
         let mut res = String::from("\nAvailable commands:\n\n");
         for (cmdname, cmd) in &bot.commands {
@@ -10,7 +20,6 @@ pub fn help_command(bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
         return res;
     }
 
-    // displays the help string of the command passed as argument if present
     let mut res = String::new();
     for arg in args {
         if bot.commands.contains_key(arg.to_owned()) {

@@ -5,16 +5,22 @@ use crate::structs;
 
 pub struct ChatBot {
     pub commands: HashMap<String, structs::command::Command>,
+    pub aliases: HashMap<String, String>
 }
 
 impl ChatBot {
     pub fn new() -> ChatBot {
         ChatBot {
             commands: HashMap::new(),
+            aliases: HashMap::new()
         }
     }
 
     pub fn register_command(&mut self, command: structs::command::Command) {
+        for name in command.alias {
+            self.aliases.insert(String::from(name.to_owned()), command.name.clone());
+        }
+        self.aliases.insert(command.name.clone(), command.name.clone());
         self.commands.insert(command.name.clone(), command);
     }
 
@@ -41,12 +47,12 @@ impl ChatBot {
                         continue;
                     }
 
-                    if !self.commands.contains_key(&name) {
+                    if !self.aliases.contains_key(&name) {
                         println!("No such command - `{}`\n", &name);
                         continue;
                     }
 
-                    let command = self.commands.get(&name).unwrap();
+                    let command = self.commands.get(self.aliases.get(&name).unwrap()).unwrap();
                     let result = (command.execute)(self, &args);
                     println!("{}", result);
 

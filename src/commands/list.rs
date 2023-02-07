@@ -1,35 +1,28 @@
-use chrono::{Local, NaiveDate, Datelike};
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{Read};
+use chrono::{Local, NaiveDate};
+use std::io::ErrorKind;
 use crate::structs;
+use crate::common;
 
-fn read_people() -> Result<HashMap<String, String>, std::io::Error> {
-    let mut file = File::open("birthdays.json")?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    if contents.is_empty() {
-        return Ok(HashMap::new());
-    }
-    let people: HashMap<String, String> = serde_json::from_str(&contents)?;
-    Ok(people)
+pub fn get_command() -> structs::command::Command {
+    let alias = &["show", "upcoming", "next"];
+    structs::command::Command::new(
+        "list", alias,
+        "List the upcoming birthdays",
+        &format!("Lists the people and their birthdays whose birthdays are due today or tomorrow.\nUse with the argument `all` to display all birthdays.\n\
+alias: {}", alias.join(", ")),
+        list_command
+    )
 }
 
-fn equal_day_and_month(date1: &NaiveDate, date2: &NaiveDate) -> bool {
-    if (date1.month() == date2.month()) && (date1.day() == date2.day()) {
-        return true;
-    }
-    false
-}
-
-pub fn list_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
+fn list_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
     let mut display_all = false;
     if args.len() >= 1 && &args[0].to_lowercase() == "all" {
         display_all = true;
     }
 
-    let people = match read_people() {
+    let people = match common::read_people() {
         Ok(people) => people,
+        Err(ref e) if e.kind() == ErrorKind::InvalidData => return format!("\nFailed to read database: {}\n", e),
         Err(e) => return format!("\nFailed to read database: {}\nIt is possible that the database file doesn't exist. Add a new birthday to be able to list birthdays.\n", e),
     };
 
@@ -42,15 +35,15 @@ pub fn list_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
     for (person, day) in people {
         let birthday = match NaiveDate::parse_from_str(&day, "%0d-%0m-%Y") {
             Ok(bday) => bday,
-            Err(_e) => match NaiveDate::parse_from_str(&(day.to_owned()+"-2000"), "%0d-%0m-%Y") {
+            Err(_e) => match NaiveDate::parse_from_str(&(day.to_owned()+"-2001"), "%0d-%0m-%Y") {
                 Ok(bday) => bday,
                 Err(_e) => {res_errors.push_str(&format!("{}: {}\n", person, day)); continue;}
             }
         };
 
-        if equal_day_and_month(&birthday, &today) {
+        if common::equal_day_and_month(&birthday, &today) {
             res_today.push_str(&format!("{}: Today\n", person));
-        } else if equal_day_and_month(&birthday, &today.succ_opt().unwrap()) {
+        } else if common::equal_day_and_month(&birthday, &today.succ_opt().unwrap()) {
             res_tomorrow.push_str(&format!("{}: Tomorrow\n", person));
         } else {
             res_later.push_str(&format!("{}: {}\n", person, birthday.format("%B %d")));

@@ -4,6 +4,17 @@ use std::io::{Read, Write};
 use std::collections::HashMap;
 use crate::structs;
 
+pub fn get_command() -> structs::command::Command {
+    let alias = &["append", "insert", "new", "edit"];
+    structs::command::Command::new(
+        "add", alias,
+        "Add a birthday",
+        &format!("Takes 2 arguments (name and birthday). Adds the entry to the database.\n\
+alias: {}", alias.join(", ")),
+        add_command
+    )
+}
+
 fn add_person(name: &str, birthday: &str) -> Result<String, std::io::Error> {
 
     let mut contents = String::new();
@@ -26,14 +37,11 @@ fn add_person(name: &str, birthday: &str) -> Result<String, std::io::Error> {
     };
 }
 
-// Define the add command for the chat bot
-pub fn add_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
-    // Check that there are exactly two arguments
+fn add_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() != 2 {
         return "\nInvalid number of arguments. Usage: add <name> <birthday>\n".to_owned();
     }
 
-    // Call the add_person function with the two arguments
     match add_person(args[0], args[1]) {
         Ok(res) => res,
         Err(e) => format!("\nFailed to add person: {}\n", e),
