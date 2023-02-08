@@ -9,6 +9,7 @@ fn main() {
     chat_bot.register_command(commands::list::get_command());
     chat_bot.register_command(commands::fetch::get_command());
     chat_bot.register_command(commands::help::get_command());
+    chat_bot.register_command(commands::quiz::get_command());
     match chat_bot.run() {
         Ok(()) => {},
         Err(e) => {println!("\nReadlineError: {}", e)}

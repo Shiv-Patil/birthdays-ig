@@ -37,7 +37,7 @@ fn add_person(name: &str, birthday: &str) -> Result<String, std::io::Error> {
     };
 }
 
-fn add_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
+fn add_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() != 2 {
         return "\nInvalid number of arguments. Usage: add <name> <birthday>\n".to_owned();
     }

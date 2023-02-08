@@ -5,11 +5,11 @@ pub struct Command {
     pub alias: &'static[&'static str],
     pub description: String,
     pub helpstring: String,
-    pub execute: fn(bot: &structs::chatbot::ChatBot, args: &[&str]) -> String,
+    pub execute: fn(bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String,
 }
 
 impl Command {
-    pub fn new(name: &str, alias: &'static[&'static str], description: &str, helpstring: &str, execute: fn(bot: &structs::chatbot::ChatBot, args: &[&str]) -> String) -> Command {
+    pub fn new(name: &str, alias: &'static[&'static str], description: &str, helpstring: &str, execute: fn(bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String) -> Command {
         Command {
             name: name.to_owned(),
             alias: alias,

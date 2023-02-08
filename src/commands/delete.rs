@@ -55,7 +55,7 @@ fn delete_bithday(names: &[&str]) -> Result<String, std::io::Error> {
     Ok(res)
 }
 
-fn delete_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
+fn delete_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() == 0 {
         return "\nCommand needs at least one argument <name>. Usage: delete <name1> <name2>[optional]...\n".to_owned();
     }

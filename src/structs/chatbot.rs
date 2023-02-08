@@ -5,14 +5,16 @@ use crate::structs;
 
 pub struct ChatBot {
     pub commands: HashMap<String, structs::command::Command>,
-    pub aliases: HashMap<String, String>
+    pub aliases: HashMap<String, String>,
+    pub rl: Editor<()>
 }
 
 impl ChatBot {
     pub fn new() -> ChatBot {
         ChatBot {
             commands: HashMap::new(),
-            aliases: HashMap::new()
+            aliases: HashMap::new(),
+            rl: Editor::<()>::new().unwrap()
         }
     }
 
@@ -24,25 +26,27 @@ impl ChatBot {
         self.commands.insert(command.name.clone(), command);
     }
 
-    pub fn run(&self) -> Result<()> {
+    pub fn run(&mut self) -> Result<()> {
         let exit_strings = ["q", "quit", "exit", "bye", "goodbye", "adios", "see ya", "so long", "stop", "gtg"];
-        println!("HI ^.^ type `help` to see all available commands.\n");
-        let mut rl = Editor::<()>::new()?;
+        println!("HI ^.^ type `help` to see all available commands.\ntype q to exit program.\n");
         loop {
-            let readline = rl.readline("~> ");
+            let readline = self.rl.readline("~> ");
             match readline {
-                Ok(line) => {
-
-                    let mut parts = line.trim().split_whitespace();
-                    let name = parts.next().unwrap().to_owned();
+                Ok(l) => {
+                    let line = l.trim();
+                    if line.is_empty() {
+                        continue;
+                    }
+                    let mut parts = line.split_whitespace();
+                    let name = parts.next().unwrap().to_owned().to_lowercase();
                     let args = parts.collect::<Vec<&str>>();
 
-                    if exit_strings.iter().any(|&s| s == &line.trim().to_lowercase()) {
+                    if exit_strings.iter().any(|&s| s == &line.to_lowercase()) {
                         println!("\n:)\n");
                         break;
                     }
 
-                    if &line.trim().to_lowercase() == "rickroll" {
+                    if &line.to_lowercase() == "rickroll" {
                         println!("\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you ^.^\n");
                         continue;
                     }
@@ -56,7 +60,7 @@ impl ChatBot {
                     let result = (command.execute)(self, &args);
                     println!("{}", result);
 
-                    rl.add_history_entry(line.trim());
+                    self.rl.add_history_entry(line.trim());
                 },
                 Err(ReadlineError::Interrupted) => {
                     println!("CTRL-C");

@@ -1,5 +1,4 @@
-use chrono::{Local, NaiveDate};
-use std::io::ErrorKind;
+use chrono::{Local};
 use crate::structs;
 use crate::common;
 
@@ -14,17 +13,18 @@ alias: {}", alias.join(", ")),
     )
 }
 
-fn list_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
+fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     let mut display_all = false;
     if args.len() >= 1 && &args[0].to_lowercase() == "all" {
         display_all = true;
     }
 
-    let people = match common::read_people() {
+    let peoplehash = match common::read_people() {
         Ok(people) => people,
-        Err(ref e) if e.kind() == ErrorKind::InvalidData => return format!("\nFailed to read database: {}\n", e),
-        Err(e) => return format!("\nFailed to read database: {}\nIt is possible that the database file doesn't exist. Add a new birthday to be able to list birthdays.\n", e),
+        Err(e) => return format!("\nError: {}\n", e),
     };
+    let mut people: Vec<(String, String)> = peoplehash.into_iter().collect();
+    people.sort_by(|a, b| a.0.cmp(&b.0));
 
     let today = Local::now().date_naive();
     let mut res_today = String::new();
@@ -33,12 +33,9 @@ fn list_command(_bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
     let mut res_errors = String::new();
 
     for (person, day) in people {
-        let birthday = match NaiveDate::parse_from_str(&day, "%0d-%0m-%Y") {
-            Ok(bday) => bday,
-            Err(_e) => match NaiveDate::parse_from_str(&(day.to_owned()+"-2001"), "%0d-%0m-%Y") {
-                Ok(bday) => bday,
-                Err(_e) => {res_errors.push_str(&format!("{}: {}\n", person, day)); continue;}
-            }
+        let birthday = match common::parse_birthday(&day) {
+            Ok(d) => d,
+            Err(_e) => {res_errors.push_str(&format!("{}: {}\n", person, day)); continue;}
         };
 
         if common::equal_day_and_month(&birthday, &today) {
@@ -68,7 +65,8 @@ Please update them to the correct format (either `dd-mm-yyyy` or `dd-mm`) by usi
     }
 
     if result.is_empty() {
-        "No upcoming birthdays.".to_owned()
+        "\nNo upcoming birthdays.\n\
+If you are looking for all birthdays, use the command again with the `all` argument (list all).\n".to_owned()
     } else {
         result
     }

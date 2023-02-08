@@ -11,7 +11,7 @@ alias: {}", alias.join(", ")),
     )
 }
 
-fn help_command(bot: &structs::chatbot::ChatBot, args: &[&str]) -> String {
+fn help_command(bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() == 0 {
         let mut res = String::from("\nAvailable commands:\n\n");
         for (cmdname, cmd) in &bot.commands {
