@@ -1,8 +1,7 @@
-use serde_json;
-use std::fs::File;
-use std::io::{Read, Write};
+use std::io::ErrorKind;
 use std::collections::HashMap;
 use crate::structs;
+use crate::common;
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["append", "insert", "new", "edit"];
@@ -15,21 +14,21 @@ alias: {}", alias.join(", ")),
     )
 }
 
-fn add_person(name: &str, birthday: &str) -> Result<String, std::io::Error> {
+fn add_person(name: &str, birthday: &str) -> Result<String, String> {
 
-    let mut contents = String::new();
-    match File::open("birthdays.json") {
-        Ok(mut readfile) => {readfile.read_to_string(&mut contents)?;},
-        Err(_e) => {}
+    let mut people: HashMap<String, String> = match common::read_people() {
+        Ok(p) => p,
+        Err(e) => {
+            if e.kind() == ErrorKind::NotFound {
+                HashMap::new()
+            } else {
+                return Err("The database file is corrupted. You can try to either fix birthdays.json or delete it and try again.".to_string());
+            }
+        }
     };
 
-    let mut savefile = File::create("birthdays.json").unwrap();
-
-    let mut people: HashMap<String, String> = if contents.is_empty() {HashMap::new()} else {serde_json::from_str(&contents)?};
     let updated = people.insert(name.to_owned(), birthday.to_owned());
-    let serialized = serde_json::to_string(&people)?;
-
-    write!(savefile, "{}", serialized)?;
+    common::write_people(&people)?;
 
     match updated {
         Some(old) => return Ok(format!("\nSuccessfully updated the birthday of {} from {} to {}.\n", name, old, birthday)),

@@ -1,4 +1,4 @@
-use chrono::{Local};
+use chrono::Local;
 use crate::structs;
 use crate::common;
 

@@ -13,8 +13,10 @@ alias: {}", alias.join(", ")),
 
 fn help_command(bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     if args.len() == 0 {
+        let cmds = &mut bot.commands.iter().collect::<Vec<(&String, &structs::command::Command)>>();
+        cmds.sort_by(|a, b| a.0.cmp(b.0));
         let mut res = String::from("\nAvailable commands:\n\n");
-        for (cmdname, cmd) in &bot.commands {
+        for (cmdname, cmd) in cmds {
             res.push_str(&format!("{} - {}\n", cmdname, cmd.description));
         }
         return res;

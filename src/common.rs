@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Read, Error, ErrorKind};
+use std::io::{Read, Error, ErrorKind, Write};
 use chrono::{NaiveDate, Datelike};
 
 pub fn read_people() -> Result<HashMap<String, String>, std::io::Error> {
@@ -19,6 +19,13 @@ pub fn read_people() -> Result<HashMap<String, String>, std::io::Error> {
         Err(_e) => return Err(Error::new(ErrorKind::InvalidData, "Corrupted database file"))
     };
     Ok(people)
+}
+
+pub fn write_people(people: &HashMap<String, String>) -> Result<(), String> {
+    let mut savefile = File::create("birthdays.json").map_err(|e| e.to_string())?;
+    let serialized = serde_json::to_string(people).map_err(|e| e.to_string())?;
+    write!(savefile, "{}", serialized).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 pub fn equal_day_and_month(date1: &NaiveDate, date2: &NaiveDate) -> bool {
