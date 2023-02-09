@@ -20,10 +20,10 @@ impl ChatBot {
 
     pub fn register_command(&mut self, command: structs::command::Command) {
         for name in command.alias {
-            self.aliases.insert(String::from(name.to_owned()), command.name.clone());
+            let _ = self.aliases.insert(String::from(name.to_owned()), command.name.clone());
         }
-        self.aliases.insert(command.name.clone(), command.name.clone());
-        self.commands.insert(command.name.clone(), command);
+        let _ = self.aliases.insert(command.name.clone(), command.name.clone());
+        let _ = self.commands.insert(command.name.clone(), command);
     }
 
     pub fn run(&mut self) -> Result<()> {
@@ -60,7 +60,7 @@ impl ChatBot {
                     let result = (command.execute)(self, &args);
                     println!("{}", result);
 
-                    self.rl.add_history_entry(line.trim());
+                    let _ = self.rl.add_history_entry(line.trim());
                 },
                 Err(ReadlineError::Interrupted) => {
                     println!("CTRL-C");

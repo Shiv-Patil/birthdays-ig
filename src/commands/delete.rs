@@ -1,8 +1,7 @@
-use serde_json;
-use std::fs::{File, remove_file};
-use std::io::{Read, Write};
+use std::fs::remove_file;
+use std::io::ErrorKind;
 use std::collections::HashMap;
-use crate::structs;
+use crate::{structs, common};
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["remove", "erase", "wipe", "clear"];
@@ -15,14 +14,17 @@ alias: {}", alias.join(", ")),
     )
 }
 
-fn delete_bithday(names: &[&str]) -> Result<String, std::io::Error> {
-
-    let mut file = File::open("birthdays.json")?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-
-    let mut people: HashMap<String, String> = if contents.is_empty() {HashMap::new()} else {serde_json::from_str(&contents)?};
-    let mut savefile = File::create("birthdays.json").unwrap();
+fn delete_bithday(names: &[&str]) -> Result<String, String> {
+    let mut people: HashMap<String, String> = match common::read_people() {
+        Ok(p) => p,
+        Err(e) => {
+            if e.kind() == ErrorKind::NotFound {
+                return Ok("\nThere are no birthdays stored.\n".to_string());
+            } else {
+                return Err("The database file is corrupted. You can try to either fix birthdays.json or delete it and try again.".to_string());
+            }
+        }
+    };
 
     let mut res = String::from("\n");
     let mut deleted = 0;
@@ -43,8 +45,7 @@ fn delete_bithday(names: &[&str]) -> Result<String, std::io::Error> {
             Err(_e) => {}
         };
     } else if deleted != 0 {
-        let serialized = serde_json::to_string(&people)?;
-        write!(savefile, "{}", serialized)?;
+        common::write_people(&people)?;
     }
     if deleted != 0 {
         res.push_str(&format!("\n{} {} deleted.\n", deleted, if deleted == 1 {"entry"} else {"entries"}));
@@ -62,6 +63,6 @@ fn delete_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String
 
     match delete_bithday(args) {
         Ok(res) => res,
-        Err(e) => format!("\nFailed to delete birthday: {}\nIt is possible that the database file doesn't exist. Add a new birthday to be able to remove birthdays.\n", e),
+        Err(e) => format!("\nFailed to delete birthday: {}\n", e),
     }
 }

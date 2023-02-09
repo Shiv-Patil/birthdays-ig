@@ -1,3 +1,4 @@
+#![warn(unused_results)]
 mod commands;
 mod structs;
 mod common;
@@ -12,6 +13,7 @@ fn main() {
     chat_bot.register_command(commands::help::get_command());
     chat_bot.register_command(commands::quiz::get_command());
     chat_bot.register_command(commands::export::get_command());
+    chat_bot.register_command(commands::wish::get_command());
     match chat_bot.run() {
         Ok(()) => {},
         Err(e) => {println!("\nReadlineError: {}", e)}

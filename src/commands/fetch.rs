@@ -49,12 +49,12 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
                 if common::equal_day_and_month(&bday, &date) {
                     matches += 1;
                     res.push_str(&format!("{}: {}\n", name, birthday));
-                    already_added.insert(name.clone());
+                    let _ = already_added.insert(name.clone());
                 }
             } else if arg == name {
                 matches += 1;
                 res.push_str(&format!("{}: {}\n", name, birthday));
-                already_added.insert(name.clone());
+                let _ = already_added.insert(name.clone());
             }
         }
     }

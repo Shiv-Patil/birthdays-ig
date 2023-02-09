@@ -73,7 +73,7 @@ fn read_csv(path: &str) -> Result<String, String> {
                 continue;
             }
         };
-        people.insert(name, birthday);
+        let _ = people.insert(name, birthday);
     }
 
     if people.len() == 0 {

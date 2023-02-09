@@ -10,7 +10,7 @@ pub fn read_people() -> Result<HashMap<String, String>, std::io::Error> {
         Err(e) => return Err(e)
     };
     let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
+    let _ = file.read_to_string(&mut contents)?;
     if contents.is_empty() {
         return Ok(HashMap::new());
     }
