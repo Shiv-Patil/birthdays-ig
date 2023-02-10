@@ -1,30 +1,35 @@
-use std::{fs::File, io::ErrorKind, io::BufReader, collections::HashMap};
-use csv;
-use crate::structs;
 use crate::common;
+use crate::structs;
+use csv;
+use std::{collections::HashMap, fs::File, io::BufReader, io::ErrorKind};
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["read", "pull"];
     structs::command::Command::new(
-        "import", alias,
+        "import",
+        alias,
         "Import birthdays from csv file",
-        &format!("Import birthdays in bulk from a csv file. The data format should be:\n\
+        &format!(
+            "Import birthdays in bulk from a csv file. The data format should be:\n\
 <name>, <birthday>: one entry on each line.\n\
 Usage - `import <path-to-csv-file>` (eg. import ../birthdays.csv) \n\
-alias: {}", alias.join(", ")),
-        import_command
+alias: {}",
+            alias.join(", ")
+        ),
+        import_command,
     )
 }
 
 fn import_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
-    if args.len() == 0 {
+    if args.is_empty() {
         return "\nPlease provide the file to import from as an argument to the command.\n\
-Run `help import` for more details.\n".to_string();
+Run `help import` for more details.\n"
+            .to_string();
     }
 
     match read_csv(args[0]) {
         Ok(s) => s,
-        Err(e) => format!("\nError: {}\n", e)
+        Err(e) => format!("\nError: {e}\n"),
     }
 }
 
@@ -33,11 +38,11 @@ fn read_csv(path: &str) -> Result<String, String> {
         Ok(r) => r,
         Err(e) => {
             if e.kind() == ErrorKind::NotFound {
-                return Err("No file found with the given path".to_string())
+                return Err("No file found with the given path".to_string());
             } else if e.kind() == ErrorKind::InvalidInput {
-                return Err("Given path is not valid".to_string())
+                return Err("Given path is not valid".to_string());
             } else {
-                return Err("Unknown error trying to open file".to_string())
+                return Err("Unknown error trying to open file".to_string());
             }
         }
     };
@@ -62,23 +67,24 @@ fn read_csv(path: &str) -> Result<String, String> {
     for res in csvreader.records() {
         let record = res.map_err(|e| e.to_string())?;
         if record.len() != 2 {
-            return Err("Please make sure the csv file is in the right format.".to_string())
+            return Err("Please make sure the csv file is in the right format.".to_string());
         }
         let name = record[0].trim().to_string();
         let birthday = record[1].trim().to_string();
         match common::parse_birthday(&birthday) {
             Ok(_d) => (),
             Err(_) => {
-                errors.push_str(&format!("{}: {}\n", name, birthday));
+                errors.push_str(&format!("{name}: {birthday}\n"));
                 continue;
             }
         };
         let _ = people.insert(name, birthday);
     }
 
-    if people.len() == 0 {
+    if people.is_empty() {
         return Err("The data in CSV file is not in the right format.\n\
-Please use the format `dd-mm` or `dd-mm-yyyy` for birthdays.".to_string());
+Please use the format `dd-mm` or `dd-mm-yyyy` for birthdays."
+            .to_string());
     }
 
     common::write_people(&people)?;

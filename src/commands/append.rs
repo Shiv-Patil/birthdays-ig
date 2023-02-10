@@ -1,21 +1,24 @@
-use std::io::ErrorKind;
-use std::collections::HashMap;
-use crate::structs;
 use crate::common;
+use crate::structs;
+use std::collections::HashMap;
+use std::io::ErrorKind;
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["append", "insert", "new", "edit"];
     structs::command::Command::new(
-        "add", alias,
+        "add",
+        alias,
         "Add a birthday",
-        &format!("Takes 2 arguments (name and birthday). Adds the entry to the database.\n\
-alias: {}", alias.join(", ")),
-        add_command
+        &format!(
+            "Takes 2 arguments (name and birthday). Adds the entry to the database.\n\
+alias: {}",
+            alias.join(", ")
+        ),
+        add_command,
     )
 }
 
 fn add_person(name: &str, birthday: &str) -> Result<String, String> {
-
     let mut people: HashMap<String, String> = match common::read_people() {
         Ok(p) => p,
         Err(e) => {
@@ -31,9 +34,11 @@ fn add_person(name: &str, birthday: &str) -> Result<String, String> {
     common::write_people(&people)?;
 
     match updated {
-        Some(old) => return Ok(format!("\nSuccessfully updated the birthday of {} from {} to {}.\n", name, old, birthday)),
-        None => return Ok("\nSuccessfully added person to the file.\n".to_owned())
-    };
+        Some(old) => Ok(format!(
+            "\nSuccessfully updated the birthday of {name} from {old} to {birthday}.\n"
+        )),
+        None => Ok("\nSuccessfully added person to the file.\n".to_owned()),
+    }
 }
 
 fn add_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
@@ -43,6 +48,6 @@ fn add_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
 
     match add_person(args[0], args[1]) {
         Ok(res) => res,
-        Err(e) => format!("\nFailed to add person: {}\n", e),
+        Err(e) => format!("\nFailed to add person: {e}\n"),
     }
 }

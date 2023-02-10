@@ -1,7 +1,7 @@
 #![warn(unused_results)]
 mod commands;
-mod structs;
 mod common;
+mod structs;
 
 fn main() {
     let mut chat_bot = structs::chatbot::ChatBot::new();
@@ -15,7 +15,9 @@ fn main() {
     chat_bot.register_command(commands::export::get_command());
     chat_bot.register_command(commands::wish::get_command());
     match chat_bot.run() {
-        Ok(()) => {},
-        Err(e) => {println!("\nReadlineError: {}", e)}
+        Ok(()) => {}
+        Err(e) => {
+            println!("\nReadlineError: {e}")
+        }
     };
 }

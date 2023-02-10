@@ -1,7 +1,7 @@
+use crate::{common, structs};
+use std::collections::HashMap;
 use std::fs::remove_file;
 use std::io::ErrorKind;
-use std::collections::HashMap;
-use crate::{structs, common};
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["remove", "erase", "wipe", "clear"];
@@ -32,37 +32,45 @@ fn delete_bithday(names: &[&str]) -> Result<String, String> {
     for name in names {
         match people.remove(name.to_owned()) {
             Some(removed) => {
-                res.push_str(&format!("Successfully removed the birthday of {} ({}).\n", name, removed));
+                res.push_str(&format!(
+                    "Successfully removed the birthday of {name} ({removed}).\n"
+                ));
                 deleted += 1;
-            },
-            None => {res.push_str(&format!("No birthday for `{}` exists.\n", name));}
+            }
+            None => {
+                res.push_str(&format!("No birthday for `{name}` exists.\n"));
+            }
         };
     }
 
     if people.is_empty() {
         match remove_file("birthdays.json") {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(_e) => {}
         };
     } else if deleted != 0 {
         common::write_people(&people)?;
     }
     if deleted != 0 {
-        res.push_str(&format!("\n{} {} deleted.\n", deleted, if deleted == 1 {"entry"} else {"entries"}));
+        res.push_str(&format!(
+            "\n{} {} deleted.\n",
+            deleted,
+            if deleted == 1 { "entry" } else { "entries" }
+        ));
     } else {
-        res.push_str(&format!("\nNo changes were made.\n"));
+        res.push_str("\nNo changes were made.\n");
     }
 
     Ok(res)
 }
 
 fn delete_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
-    if args.len() == 0 {
+    if args.is_empty() {
         return "\nCommand needs at least one argument <name>. Usage: delete <name1> <name2>[optional]...\n".to_owned();
     }
 
     match delete_bithday(args) {
         Ok(res) => res,
-        Err(e) => format!("\nFailed to delete birthday: {}\n", e),
+        Err(e) => format!("\nFailed to delete birthday: {e}\n"),
     }
 }

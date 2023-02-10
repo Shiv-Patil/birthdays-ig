@@ -1,6 +1,6 @@
-use chrono::Local;
-use crate::structs;
 use crate::common;
+use crate::structs;
+use chrono::Local;
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["show", "upcoming", "next"];
@@ -15,13 +15,13 @@ alias: {}", alias.join(", ")),
 
 fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     let mut display_all = false;
-    if args.len() >= 1 && &args[0].to_lowercase() == "all" {
+    if !args.is_empty() && &args[0].to_lowercase() == "all" {
         display_all = true;
     }
 
     let peoplehash = match common::read_people() {
         Ok(people) => people,
-        Err(e) => return format!("\nError: {}\n", e),
+        Err(e) => return format!("\nError: {e}\n"),
     };
     let mut people: Vec<(String, String)> = peoplehash.into_iter().collect();
     people.sort_by(|a, b| a.0.cmp(&b.0));
@@ -35,38 +35,42 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     for (person, day) in people {
         let birthday = match common::parse_birthday(&day) {
             Ok(d) => d,
-            Err(_e) => {res_errors.push_str(&format!("{}: {}\n", person, day)); continue;}
+            Err(_e) => {
+                res_errors.push_str(&format!("{person}: {day}\n"));
+                continue;
+            }
         };
 
         if common::equal_day_and_month(&birthday, &today) {
-            res_today.push_str(&format!("{}: Today\n", person));
+            res_today.push_str(&format!("{person}: Today\n"));
         } else if common::equal_day_and_month(&birthday, &today.succ_opt().unwrap()) {
-            res_tomorrow.push_str(&format!("{}: Tomorrow\n", person));
+            res_tomorrow.push_str(&format!("{person}: Tomorrow\n"));
         } else {
             res_later.push_str(&format!("{}: {}\n", person, birthday.format("%B %d")));
         }
     }
     let mut result = String::new();
     if !res_today.is_empty() {
-        result.push_str("\n");
+        result.push('\n');
         result.push_str(&res_today);
     }
     if !res_tomorrow.is_empty() {
-        result.push_str("\n");
+        result.push('\n');
         result.push_str(&res_tomorrow);
     }
     if display_all && !res_later.is_empty() {
-        result.push_str("\n");
+        result.push('\n');
         result.push_str(&res_later);
     }
     if !res_errors.is_empty() {
         result.push_str(&format!("\nThere were some errors found in the database file, which are given below. These are possibly due to the dates being in the wrong format or invalid.\n\
-Please update them to the correct format (either `dd-mm-yyyy` or `dd-mm`) by using the add command.\n\n{}", res_errors));
+Please update them to the correct format (either `dd-mm-yyyy` or `dd-mm`) by using the add command.\n\n{res_errors}"));
     }
 
     if result.is_empty() {
         "\nNo upcoming birthdays.\n\
-If you are looking for all birthdays, use the command again with the `all` argument (list all).\n".to_owned()
+If you are looking for all birthdays, use the command again with the `all` argument (list all).\n"
+            .to_owned()
     } else {
         result
     }

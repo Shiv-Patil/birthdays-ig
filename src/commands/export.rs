@@ -1,7 +1,7 @@
-use std::{path::Path, fs::File, io::ErrorKind, collections::HashMap};
-use csv;
-use crate::structs;
 use crate::common;
+use crate::structs;
+use csv;
+use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path};
 
 pub fn get_command() -> structs::command::Command {
     let alias = &["write", "backup", "push"];
@@ -16,20 +16,21 @@ alias: {}", alias.join(", ")),
 }
 
 fn export_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
-    if args.len() == 0 {
+    if args.is_empty() {
         return "\nPlease provide the filename for the csv file as an argument to the command.\n\
-Run `help export` for more details.\n".to_string();
+Run `help export` for more details.\n"
+            .to_string();
     }
 
     match write_csv(args[0].to_string()) {
         Ok(s) => s,
-        Err(e) => format!("\nError: {}\n", e)
+        Err(e) => format!("\nError: {e}\n"),
     }
 }
 
 fn write_csv(mut name: String) -> Result<String, String> {
     if !name.ends_with(".csv") {
-        name = format!("{}.csv", name)
+        name = format!("{name}.csv")
     }
     let path = Path::new(&name);
     if path.exists() {
@@ -42,7 +43,10 @@ fn write_csv(mut name: String) -> Result<String, String> {
             if e.kind() == ErrorKind::NotFound {
                 HashMap::new()
             } else {
-                return Err("The database file is corrupted. You can try to fix birthdays.json try again.".to_string());
+                return Err(
+                    "The database file is corrupted. You can try to fix birthdays.json try again."
+                        .to_string(),
+                );
             }
         }
     };
@@ -51,9 +55,14 @@ fn write_csv(mut name: String) -> Result<String, String> {
     let mut writer = csv::Writer::from_writer(savefile);
 
     for (name, birthday) in people.iter() {
-        writer.write_record(&[name, birthday]).map_err(|e| e.to_string())?;
+        writer
+            .write_record([name, birthday])
+            .map_err(|e| e.to_string())?;
     }
 
     writer.flush().map_err(|e| e.to_string())?;
-    Ok(format!("\nSuccessfully exported CSV as {}\n", path.to_string_lossy()))
+    Ok(format!(
+        "\nSuccessfully exported CSV as {}\n",
+        path.to_string_lossy()
+    ))
 }
