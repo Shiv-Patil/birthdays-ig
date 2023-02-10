@@ -7,3 +7,4 @@ pub mod import;
 pub mod list;
 pub mod quiz;
 pub mod wish;
+pub mod zodiac;
