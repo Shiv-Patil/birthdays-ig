@@ -67,10 +67,12 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
 Please update them to the correct format (either `dd-mm-yyyy` or `dd-mm`) by using the add command.\n\n{res_errors}"));
     }
 
-    if result.is_empty() {
+    if result.is_empty() && !display_all {
         "\nNo upcoming birthdays.\n\
 If you are looking for all birthdays, use the command again with the `all` argument (list all).\n"
             .to_owned()
+    } else if result.is_empty() {
+        "\nNo birthdays stored.\n".to_owned()
     } else {
         result
     }
