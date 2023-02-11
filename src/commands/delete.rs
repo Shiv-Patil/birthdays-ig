@@ -3,7 +3,7 @@ use std::fs::remove_file;
 use std::io::ErrorKind;
 
 pub fn get_command() -> structs::command::Command {
-    let alias = &["remove", "erase", "wipe", "clear"];
+    let alias = &["remove", "erase"];
     structs::command::Command::new(
         "delete", alias,
         "Remove a birthday",

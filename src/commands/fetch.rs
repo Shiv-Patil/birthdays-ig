@@ -25,9 +25,10 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
             .to_string();
     }
 
-    let mut res = String::from("\n");
+    let mut res = String::new();
     let mut res_error = String::new();
     let mut matches = 0;
+
     let people = match common::read_people() {
         Ok(people) => people,
         Err(e) => return format!("\nError: {e}\n"),
@@ -48,41 +49,54 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
             if already_added.contains(name) {
                 continue;
             }
-            _ = already_added.insert(name.clone());
+            if arg == name {
+                _ = already_added.insert(name.clone());
+            }
             if is_date {
                 let bday = match common::parse_birthday(&person.birthday) {
                     Ok(d) => d,
-                    Err(_e) => {
-                        res_error.push_str(&format!("{name}: {}\n", person.birthday));
-                        continue;
-                    }
+                    Err(_e) => continue,
                 };
                 if common::equal_day_and_month(&bday, &date) {
                     matches += 1;
-                    res.push_str(&format!("{name}: {}\n", person.birthday));
+                    res.push_str(&format!("\n{name}: {}", person.birthday));
                 }
             } else if arg == name {
-                matches += 1;
                 let bday = if person.birthday.is_empty() {
+                    matches += 1;
                     "No birthday stored"
                 } else {
+                    match common::parse_birthday(&person.birthday) {
+                        Ok(_) => (),
+                        Err(_e) => {
+                            res_error.push_str(&format!("\n{name}: {}", person.birthday));
+                            continue;
+                        }
+                    }
+                    matches += 1;
                     &person.birthday
                 };
-                res.push_str(&format!("{name}: {bday}\n"));
+                res.push_str(&format!("\n{name}: {bday}"));
+                if args.len() == 1 {
+                    let mut sorted: Vec<(&String, &String)> = person.fields.iter().collect();
+                    sorted.sort_by(|a, b| a.0.cmp(b.0));
+                    res.push('\n');
+                    for (field, content) in sorted {
+                        res.push_str(&format!("\n{field} - {content}\n"));
+                    }
+                }
             }
         }
     }
+
     if matches == 0 {
-        res.push_str("No match found\n");
-    } else {
-        res.push_str(&format!(
-            "\n{} {} found\n",
-            matches,
-            if matches == 1 { "match" } else { "matches" }
-        ));
+        res.push_str("\nNo match found\n");
+    } else if matches > 1 {
+        res.push_str(&format!("\n\n{matches} matches found\n",));
     }
+
     if !res_error.is_empty() {
-        res.push_str(&format!("\nInvalid birthdays stored:\n{res_error}"));
+        res.push_str(&format!("\nInvalid birthdays stored:\n{res_error}\n"));
     }
     res
 }

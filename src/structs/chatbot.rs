@@ -2,6 +2,7 @@ use crate::structs;
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 use std::collections::HashMap;
+use std::io::{Write, stdout};
 
 pub struct ChatBot {
     pub commands: HashMap<String, structs::command::Command>,
@@ -43,6 +44,7 @@ impl ChatBot {
                     if line.is_empty() {
                         continue;
                     }
+
                     let mut parts = line.split_whitespace();
                     let name = parts.next().unwrap().to_owned().to_lowercase();
                     let args = parts.collect::<Vec<&str>>();
@@ -54,6 +56,12 @@ impl ChatBot {
 
                     if &line.to_lowercase() == "rickroll" {
                         println!("\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you ^.^\n");
+                        continue;
+                    }
+
+                    if &line.to_lowercase() == "clear" || &line.to_lowercase() == "wipe" {
+                        print!("\x1Bc");
+                        stdout().flush().unwrap();
                         continue;
                     }
 

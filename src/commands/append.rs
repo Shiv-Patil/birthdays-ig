@@ -11,6 +11,7 @@ pub fn get_command() -> structs::command::Command {
         "Add a birthday",
         &format!(
             "Takes 2 arguments (name and birthday). Adds the entry to the database.\n\
+Updates the existing entry if name already exists.\n\
 alias: {}",
             alias.join(", ")
         ),

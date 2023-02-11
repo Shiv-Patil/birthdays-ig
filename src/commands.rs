@@ -2,6 +2,7 @@ pub mod append;
 pub mod delete;
 pub mod export;
 pub mod fetch;
+pub mod field;
 pub mod help;
 pub mod import;
 pub mod list;
