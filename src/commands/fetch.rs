@@ -26,6 +26,7 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
     }
 
     let mut res = String::from("\n");
+    let mut res_error = String::new();
     let mut matches = 0;
     let people = match common::read_people() {
         Ok(people) => people,
@@ -43,24 +44,31 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
             Err(_e) => Local::now().date_naive(),
         };
 
-        for (name, birthday) in &people {
+        for (name, person) in &people {
             if already_added.contains(name) {
                 continue;
             }
+            _ = already_added.insert(name.clone());
             if is_date {
-                let bday = match common::parse_birthday(birthday) {
+                let bday = match common::parse_birthday(&person.birthday) {
                     Ok(d) => d,
-                    Err(_e) => continue,
+                    Err(_e) => {
+                        res_error.push_str(&format!("{name}: {}\n", person.birthday));
+                        continue;
+                    }
                 };
                 if common::equal_day_and_month(&bday, &date) {
                     matches += 1;
-                    res.push_str(&format!("{name}: {birthday}\n"));
-                    let _ = already_added.insert(name.clone());
+                    res.push_str(&format!("{name}: {}\n", person.birthday));
                 }
             } else if arg == name {
                 matches += 1;
-                res.push_str(&format!("{name}: {birthday}\n"));
-                let _ = already_added.insert(name.clone());
+                let bday = if person.birthday.is_empty() {
+                    "No birthday stored"
+                } else {
+                    &person.birthday
+                };
+                res.push_str(&format!("{name}: {bday}\n"));
             }
         }
     }
@@ -72,6 +80,9 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
             matches,
             if matches == 1 { "match" } else { "matches" }
         ));
+    }
+    if !res_error.is_empty() {
+        res.push_str(&format!("\nInvalid birthdays stored:\n{res_error}"));
     }
     res
 }

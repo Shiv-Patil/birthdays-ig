@@ -1,9 +1,11 @@
+use crate::structs::person::Person;
 use chrono::{Datelike, NaiveDate};
+use serde_json::{from_str, Map, Value};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Write};
 
-pub fn read_people() -> Result<HashMap<String, String>, std::io::Error> {
+pub fn read_people() -> Result<HashMap<String, Person>, std::io::Error> {
     let mut file = match File::open("birthdays.json") {
         Ok(f) => f,
         Err(ref e) if e.kind() == ErrorKind::NotFound => {
@@ -19,21 +21,60 @@ pub fn read_people() -> Result<HashMap<String, String>, std::io::Error> {
     if contents.is_empty() {
         return Ok(HashMap::new());
     }
-    let people: HashMap<String, String> = match serde_json::from_str(&contents) {
+    let err_corrupt = |s| Error::new(ErrorKind::InvalidData, s);
+    let database: Value = match from_str(&contents) {
         Ok(p) => p,
         Err(_e) => {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "Corrupted database file",
+            return Err(err_corrupt(
+                "Corrupted database file, error trying to parse json.",
             ))
         }
     };
-    Ok(people)
+
+    let people_map = match database.get("people") {
+        None => return Ok(HashMap::new()),
+        Some(s) => match s.as_object() {
+            None => return Ok(HashMap::new()),
+            Some(o) => o,
+        },
+    };
+    let people_map = HashMap::from_iter(
+        people_map
+            .iter()
+            .map(|(name, person)| match person.as_object() {
+                None => (name.to_owned(), Map::new()),
+                Some(p) => (name.to_owned(), p.to_owned()),
+            })
+            .map(|(name, person)| {
+                let birthday = match person.get("birthday") {
+                    None => String::new(),
+                    Some(b) => match b.as_str() {
+                        None => "Entry corrupted in database file".to_string(),
+                        Some(b) => b.to_string()
+                    },
+                };
+                let fields: HashMap<String, String> = match person.get("fields") {
+                    None => HashMap::new(),
+                    Some(f) => match f.as_object() {
+                        None => HashMap::new(),
+                        Some(o) => HashMap::from_iter(o.iter().map(|(k, v)| match v.as_str() {
+                            None => (k.to_owned(), "Entry corrupted in database file".to_string()),
+                            Some(s) => (k.to_owned(), s.to_string()),
+                        })),
+                    },
+                };
+                (name, Person { birthday, fields })
+            }),
+    );
+
+    Ok(people_map)
 }
 
-pub fn write_people(people: &HashMap<String, String>) -> Result<(), String> {
+pub fn write_people(people: &HashMap<String, Person>) -> Result<(), String> {
     let mut savefile = File::create("birthdays.json").map_err(|e| e.to_string())?;
-    let serialized = serde_json::to_string(people).map_err(|e| e.to_string())?;
+    let mut to_save = HashMap::new();
+    _ = to_save.insert("people", people);
+    let serialized = serde_json::to_string(&to_save).map_err(|e| e.to_string())?;
     write!(savefile, "{serialized}").map_err(|e| e.to_string())?;
     Ok(())
 }

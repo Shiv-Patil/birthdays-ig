@@ -19,7 +19,7 @@ alias: {}",
 }
 
 fn add_person(name: &str, birthday: &str) -> Result<String, String> {
-    let mut people: HashMap<String, String> = match common::read_people() {
+    let mut people = match common::read_people() {
         Ok(p) => p,
         Err(e) => {
             if e.kind() == ErrorKind::NotFound {
@@ -30,12 +30,30 @@ fn add_person(name: &str, birthday: &str) -> Result<String, String> {
         }
     };
 
-    let updated = people.insert(name.to_owned(), birthday.to_owned());
+    let fields = HashMap::new();
+    let old_fields = match people.get(name) {
+        None => &fields,
+        Some(f) => &f.fields,
+    };
+
+    let updated = people.insert(
+        name.to_owned(),
+        structs::person::Person {
+            birthday: birthday.to_string(),
+            fields: old_fields.to_owned(),
+        },
+    );
+
     common::write_people(&people)?;
 
     match updated {
         Some(old) => Ok(format!(
-            "\nSuccessfully updated the birthday of {name} from {old} to {birthday}.\n"
+            "\nSuccessfully updated the birthday of {name} from {} to {birthday}.\n",
+            if old.birthday.is_empty() {
+                "empty"
+            } else {
+                &old.birthday
+            }
         )),
         None => Ok("\nSuccessfully added person to the file.\n".to_owned()),
     }

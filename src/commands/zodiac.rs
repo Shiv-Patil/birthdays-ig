@@ -74,14 +74,18 @@ Run `help zodiac` for more details.\n"
             let sign = get_zodiac_sign(&date);
             res.push_str(&format!("{date_formatted}: {sign}\n"));
         } else {
-            let bday = match people.get(&arg.to_string()) {
+            let person = match people.get(&arg.to_string()) {
                 None => {
                     res.push_str(&format!("{arg}: Not found / Invalid date\n"));
                     continue;
                 },
                 Some(d) => d,
             };
-            let date = match common::parse_birthday(bday) {
+            if person.birthday.is_empty() {
+                res.push_str(&format!("{arg}: No birthday stored\n"));
+                continue;
+            }
+            let date = match common::parse_birthday(&person.birthday) {
                 Ok(d) => d,
                 Err(_e) => {
                     res.push_str(&format!("{arg}: Invalid birthday value\n"));

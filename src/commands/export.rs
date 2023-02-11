@@ -54,9 +54,9 @@ fn write_csv(mut name: String) -> Result<String, String> {
     let savefile = File::create(path).map_err(|e| e.to_string())?;
     let mut writer = csv::Writer::from_writer(savefile);
 
-    for (name, birthday) in people.iter() {
+    for (name, person) in people.iter() {
         writer
-            .write_record([name, birthday])
+            .write_record([name, &person.birthday])
             .map_err(|e| e.to_string())?;
     }
 

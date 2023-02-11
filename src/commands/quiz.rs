@@ -24,11 +24,12 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
     let mut chosen = false;
     let mut person = String::from("Adonis");
     let mut bday = Local::now().date_naive();
+
     while !people.is_empty() {
-        let peopleiter = people.clone();
-        let item = peopleiter.iter().choose(&mut rand::thread_rng()).unwrap();
-        person = item.0.to_string();
-        bday = match common::parse_birthday(item.1) {
+        let item = people.iter().choose(&mut rand::thread_rng()).unwrap();
+
+        person = item.0.to_owned();
+        bday = match common::parse_birthday(&item.1.birthday) {
             Ok(d) => {
                 chosen = true;
                 d

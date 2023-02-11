@@ -1,5 +1,4 @@
 use crate::{common, structs};
-use std::collections::HashMap;
 use std::fs::remove_file;
 use std::io::ErrorKind;
 
@@ -15,7 +14,7 @@ alias: {}", alias.join(", ")),
 }
 
 fn delete_bithday(names: &[&str]) -> Result<String, String> {
-    let mut people: HashMap<String, String> = match common::read_people() {
+    let mut people = match common::read_people() {
         Ok(p) => p,
         Err(e) => {
             if e.kind() == ErrorKind::NotFound {
@@ -31,14 +30,12 @@ fn delete_bithday(names: &[&str]) -> Result<String, String> {
 
     for name in names {
         match people.remove(name.to_owned()) {
-            Some(removed) => {
-                res.push_str(&format!(
-                    "Successfully removed the birthday of {name} ({removed}).\n"
-                ));
+            Some(_) => {
+                res.push_str(&format!("Successfully removed {name} from database.\n"));
                 deleted += 1;
             }
             None => {
-                res.push_str(&format!("No birthday for `{name}` exists.\n"));
+                res.push_str(&format!("`{name}` does not exist in database.\n"));
             }
         };
     }

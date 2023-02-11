@@ -23,7 +23,7 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
         Ok(people) => people,
         Err(e) => return format!("\nError: {e}\n"),
     };
-    let mut people: Vec<(String, String)> = peoplehash.into_iter().collect();
+    let mut people: Vec<(String, structs::person::Person)> = peoplehash.into_iter().collect();
     people.sort_by(|a, b| a.0.cmp(&b.0));
 
     let today = Local::now().date_naive();
@@ -32,21 +32,21 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     let mut res_later = String::new();
     let mut res_errors = String::new();
 
-    for (person, day) in people {
-        let birthday = match common::parse_birthday(&day) {
+    for (name, person) in people {
+        let birthday = match common::parse_birthday(&person.birthday) {
             Ok(d) => d,
             Err(_e) => {
-                res_errors.push_str(&format!("{person}: {day}\n"));
+                res_errors.push_str(&format!("{name}: {}\n", person.birthday));
                 continue;
             }
         };
 
         if common::equal_day_and_month(&birthday, &today) {
-            res_today.push_str(&format!("{person}: Today\n"));
+            res_today.push_str(&format!("{name}: Today\n"));
         } else if common::equal_day_and_month(&birthday, &today.succ_opt().unwrap()) {
-            res_tomorrow.push_str(&format!("{person}: Tomorrow\n"));
+            res_tomorrow.push_str(&format!("{name}: Tomorrow\n"));
         } else {
-            res_later.push_str(&format!("{}: {}\n", person, birthday.format("%B %d")));
+            res_later.push_str(&format!("{}: {}\n", name, birthday.format("%B %d")));
         }
     }
     let mut result = String::new();

@@ -78,7 +78,13 @@ fn read_csv(path: &str) -> Result<String, String> {
                 continue;
             }
         };
-        let _ = people.insert(name, birthday);
+        let _ = people.insert(
+            name,
+            structs::person::Person {
+                birthday,
+                fields: HashMap::new(),
+            },
+        );
     }
 
     if people.is_empty() {
