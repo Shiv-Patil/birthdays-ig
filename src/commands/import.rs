@@ -46,12 +46,16 @@ fn read_csv(path: &str) -> Result<String, String> {
             }
         }
     };
+    
     let file_len = file.metadata().map_err(|e| e.to_string())?.len();
+    
     if file_len == 0 {
         return Err("File empty".to_string());
     }
+    
     let reader = BufReader::new(file);
-    let mut csvreader = csv::Reader::from_reader(reader);
+    let mut csvreader = csv::ReaderBuilder::new().has_headers(false).from_reader(reader);
+    
     let mut people = match common::read_people() {
         Ok(p) => p,
         Err(e) => {
