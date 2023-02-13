@@ -16,9 +16,9 @@ alias: {}", alias.join(", ")),
 }
 
 fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
-    let mut people = match common::read_people() {
-        Ok(people) => people,
-        Err(e) => return format!("\nError: {e}\n"),
+    let (mut people, fmt) = match common::read_people() {
+        Ok(p) => p,
+        Err((e, _)) => return format!("\nError: {e}\n"),
     };
 
     let mut chosen = false;
@@ -29,7 +29,7 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
         let item = people.iter().choose(&mut rand::thread_rng()).unwrap();
 
         person = item.0.to_owned();
-        bday = match common::parse_birthday(&item.1.birthday) {
+        bday = match common::parse_birthday(&item.1.birthday, &fmt) {
             Ok(d) => {
                 chosen = true;
                 d
@@ -55,7 +55,7 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
                 if line.is_empty() {
                     break "Quiz cancelled.\n".to_string();
                 }
-                let bday_input = match common::parse_birthday(line) {
+                let bday_input = match common::parse_birthday(line, &fmt) {
                     Ok(d) => d,
                     Err(_e) => {
                         println!("Please enter date correctly (dd-mm or dd-mm-yyyy)");

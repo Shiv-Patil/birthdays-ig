@@ -37,11 +37,11 @@ fn write_csv(mut name: String) -> Result<String, String> {
         return Err("A file with that filename already exists.".to_string());
     }
 
-    let people = match common::read_people() {
+    let (people, _fmt) = match common::read_people() {
         Ok(p) => p,
-        Err(e) => {
+        Err((e, fmt)) => {
             if e.kind() == ErrorKind::NotFound {
-                HashMap::new()
+                (HashMap::new(), fmt)
             } else {
                 return Err(
                     "The database file is corrupted. You can try to fix birthdays.json try again."

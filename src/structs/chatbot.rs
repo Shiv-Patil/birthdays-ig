@@ -1,8 +1,7 @@
-use crate::structs;
+use crate::{common, structs};
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 use std::collections::HashMap;
-use std::io::{Write, stdout};
 
 pub struct ChatBot {
     pub commands: HashMap<String, structs::command::Command>,
@@ -59,9 +58,11 @@ impl ChatBot {
                         continue;
                     }
 
-                    if &line.to_lowercase() == "clear" || &line.to_lowercase() == "wipe" {
-                        print!("\x1Bc");
-                        stdout().flush().unwrap();
+                    if &line.to_lowercase() == "clear"
+                        || &line.to_lowercase() == "wipe"
+                        || &line.to_lowercase() == "cls"
+                    {
+                        common::clear_terminal();
                         continue;
                     }
 

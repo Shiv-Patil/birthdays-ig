@@ -56,11 +56,11 @@ fn read_csv(path: &str) -> Result<String, String> {
     let reader = BufReader::new(file);
     let mut csvreader = csv::ReaderBuilder::new().has_headers(false).from_reader(reader);
     
-    let mut people = match common::read_people() {
+    let (mut people, fmt) = match common::read_people() {
         Ok(p) => p,
-        Err(e) => {
+        Err((e, fmt)) => {
             if e.kind() == ErrorKind::NotFound {
-                HashMap::new()
+                (HashMap::new(), fmt)
             } else {
                 return Err("The database file is corrupted. You can try to either fix birthdays.json or delete it and try again.".to_string());
             }
@@ -75,7 +75,7 @@ fn read_csv(path: &str) -> Result<String, String> {
         }
         let name = record[0].trim().to_string();
         let birthday = record[1].trim().to_string();
-        match common::parse_birthday(&birthday) {
+        match common::parse_birthday(&birthday, &fmt) {
             Ok(_d) => (),
             Err(_) => {
                 errors.push_str(&format!("{name}: {birthday}\n"));
@@ -97,7 +97,7 @@ Please use the format `dd-mm` or `dd-mm-yyyy` for birthdays."
             .to_string());
     }
 
-    common::write_people(&people)?;
+    common::write_people(&people, fmt)?;
 
     let mut res = String::from("\nSuccessfully imported CSV file.\n");
     if !errors.is_empty() {

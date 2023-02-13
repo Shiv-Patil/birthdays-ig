@@ -48,9 +48,9 @@ Run `help zodiac` for more details.\n"
     }
 
     let mut res = String::from("\n");
-    let people = match common::read_people() {
+    let (people, fmt) = match common::read_people() {
         Ok(people) => people,
-        Err(e) => return format!("\nError: {e}\n"),
+        Err((e, _)) => return format!("\nError: {e}\n"),
     };
 
     let mut already_added: HashSet<String> = HashSet::new();
@@ -61,7 +61,7 @@ Run `help zodiac` for more details.\n"
         _ = already_added.insert(arg.to_string());
 
         let mut is_date = false;
-        let date = match common::parse_birthday(arg) {
+        let date = match common::parse_birthday(arg, &fmt) {
             Ok(d) => {
                 is_date = true;
                 d
@@ -85,7 +85,7 @@ Run `help zodiac` for more details.\n"
                 res.push_str(&format!("{arg}: No birthday stored\n"));
                 continue;
             }
-            let date = match common::parse_birthday(&person.birthday) {
+            let date = match common::parse_birthday(&person.birthday, &fmt) {
                 Ok(d) => d,
                 Err(_e) => {
                     res.push_str(&format!("{arg}: Invalid birthday value\n"));

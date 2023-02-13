@@ -20,11 +20,11 @@ alias: {}",
 }
 
 fn add_person(name: &str, birthday: &str) -> Result<String, String> {
-    let mut people = match common::read_people() {
+    let (mut people, fmt) = match common::read_people() {
         Ok(p) => p,
-        Err(e) => {
+        Err((e, fmt)) => {
             if e.kind() == ErrorKind::NotFound {
-                HashMap::new()
+                (HashMap::new(), fmt)
             } else {
                 return Err("The database file is corrupted. You can try to either fix birthdays.json or delete it and try again.".to_string());
             }
@@ -45,7 +45,7 @@ fn add_person(name: &str, birthday: &str) -> Result<String, String> {
         },
     );
 
-    common::write_people(&people)?;
+    common::write_people(&people, fmt)?;
 
     match updated {
         Some(old) => Ok(format!(

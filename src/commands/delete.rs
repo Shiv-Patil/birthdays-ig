@@ -14,9 +14,9 @@ alias: {}", alias.join(", ")),
 }
 
 fn delete_bithday(names: &[&str]) -> Result<String, String> {
-    let mut people = match common::read_people() {
+    let (mut people, fmt) = match common::read_people() {
         Ok(p) => p,
-        Err(e) => {
+        Err((e, _)) => {
             if e.kind() == ErrorKind::NotFound {
                 return Ok("\nThere are no birthdays stored.\n".to_string());
             } else {
@@ -46,7 +46,7 @@ fn delete_bithday(names: &[&str]) -> Result<String, String> {
             Err(_e) => {}
         };
     } else if deleted != 0 {
-        common::write_people(&people)?;
+        common::write_people(&people, fmt)?;
     }
     if deleted != 0 {
         res.push_str(&format!(

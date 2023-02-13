@@ -19,9 +19,9 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
         display_all = true;
     }
 
-    let peoplehash = match common::read_people() {
-        Ok(people) => people,
-        Err(e) => return format!("\nError: {e}\n"),
+    let (peoplehash, fmt) = match common::read_people() {
+        Ok(p) => p,
+        Err((e, _)) => return format!("\nError: {e}\n"),
     };
     let mut people: Vec<(String, structs::person::Person)> = peoplehash.into_iter().collect();
     people.sort_by(|a, b| a.0.cmp(&b.0));
@@ -33,7 +33,7 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
     let mut res_errors = String::new();
 
     for (name, person) in people {
-        let birthday = match common::parse_birthday(&person.birthday) {
+        let birthday = match common::parse_birthday(&person.birthday, &fmt) {
             Ok(d) => d,
             Err(_e) => {
                 res_errors.push_str(&format!("{name}: {}\n", person.birthday));

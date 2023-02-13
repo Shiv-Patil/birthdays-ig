@@ -24,9 +24,9 @@ fn add_field(
     name: &str,
     field: &str,
 ) -> Result<String, String> {
-    let mut people = match common::read_people() {
+    let (mut people, fmt) = match common::read_people() {
         Ok(p) => p,
-        Err(e) => return Err(e.to_string()),
+        Err((e, _)) => return Err(e.to_string()),
     };
 
     let mut entry = match people.remove(name) {
@@ -70,15 +70,15 @@ fn add_field(
 
     _ = people.insert(name.to_string(), entry);
 
-    common::write_people(&people)?;
+    common::write_people(&people, fmt)?;
 
     Ok(res)
 }
 
 fn delete_field(name: &str, field: &str) -> String {
-    let mut people = match common::read_people() {
+    let (mut people, fmt) = match common::read_people() {
         Ok(p) => p,
-        Err(e) => return format!("\nError: {e}\n"),
+        Err((e, _)) => return format!("\nError: {e}\n"),
     };
 
     let mut entry = match people.remove(name) {
@@ -92,7 +92,7 @@ fn delete_field(name: &str, field: &str) -> String {
         }
         Some(_) => {
             _ = people.insert(name.to_string(), entry);
-            match common::write_people(&people) {
+            match common::write_people(&people, fmt) {
                 Ok(()) => format!("\nDeleted field `{field}` for `{name}`.\n"),
                 Err(e) => format!("\nError: Writing changes to database failed: {e}\n"),
             }

@@ -29,15 +29,15 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
     let mut res_error = String::new();
     let mut matches = 0;
 
-    let people = match common::read_people() {
-        Ok(people) => people,
-        Err(e) => return format!("\nError: {e}\n"),
+    let (people, fmt) = match common::read_people() {
+        Ok(p) => p,
+        Err((e, _)) => return format!("\nError: {e}\n"),
     };
 
     let mut already_added: HashSet<String> = HashSet::new();
     for arg in args {
         let mut is_date = false;
-        let date = match common::parse_birthday(arg) {
+        let date = match common::parse_birthday(arg, &fmt) {
             Ok(d) => {
                 is_date = true;
                 d
@@ -53,7 +53,7 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
                 _ = already_added.insert(name.clone());
             }
             if is_date {
-                let bday = match common::parse_birthday(&person.birthday) {
+                let bday = match common::parse_birthday(&person.birthday, &fmt) {
                     Ok(d) => d,
                     Err(_e) => continue,
                 };
@@ -66,7 +66,7 @@ fn fetch_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String 
                     matches += 1;
                     "No birthday stored"
                 } else {
-                    match common::parse_birthday(&person.birthday) {
+                    match common::parse_birthday(&person.birthday, &fmt) {
                         Ok(_) => (),
                         Err(_e) => {
                             res_error.push_str(&format!("\n{name}: {}", person.birthday));
