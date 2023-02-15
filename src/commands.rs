@@ -3,6 +3,7 @@ pub mod delete;
 pub mod export;
 pub mod fetch;
 pub mod field;
+pub mod format;
 pub mod help;
 pub mod import;
 pub mod list;

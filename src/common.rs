@@ -11,15 +11,20 @@ pub fn read_people() -> Result<(HashMap<String, Person>, String), (std::io::Erro
     let mut file = match File::open("birthdays.json") {
         Ok(f) => f,
         Err(ref e) if e.kind() == ErrorKind::NotFound => {
-            return Err((Error::new(
-                ErrorKind::NotFound,
-                "The database file was not found. No birthday is stored.",
-            ), default_fmt))
+            return Err((
+                Error::new(
+                    ErrorKind::NotFound,
+                    "The database file was not found. No birthday is stored.",
+                ),
+                default_fmt,
+            ))
         }
         Err(e) => return Err((e, default_fmt)),
     };
     let mut contents = String::new();
-    let _ = file.read_to_string(&mut contents).map_err(|e| (e, default_fmt.clone()))?;
+    let _ = file
+        .read_to_string(&mut contents)
+        .map_err(|e| (e, default_fmt.clone()))?;
     if contents.is_empty() {
         return Ok((HashMap::new(), default_fmt));
     }
@@ -27,9 +32,10 @@ pub fn read_people() -> Result<(HashMap<String, Person>, String), (std::io::Erro
     let database: Value = match from_str(&contents) {
         Ok(p) => p,
         Err(_e) => {
-            return Err((err_corrupt(
-                "Corrupted database file, error trying to parse json.",
-            ), default_fmt))
+            return Err((
+                err_corrupt("Corrupted database file, error trying to parse json."),
+                default_fmt,
+            ))
         }
     };
 
@@ -50,7 +56,8 @@ pub fn read_people() -> Result<(HashMap<String, Person>, String), (std::io::Erro
                 }
             },
         },
-    }.to_string();
+    }
+    .to_string();
 
     let people_map = match database.get("people") {
         None => return Ok((HashMap::new(), format_pref)),
@@ -96,12 +103,18 @@ pub fn write_people(people: &HashMap<String, Person>, fmt: String) -> Result<(),
     let mut to_save = HashMap::new();
     _ = to_save.insert("people", people);
     let serialized = serde_json::to_string(&to_save).map_err(|e| e.to_string())?;
-    let mut deserialized = match serde_json::from_str::<Value>(&serialized).map_err(|e| e.to_string()).unwrap().as_object() {
+    let mut deserialized = match serde_json::from_str::<Value>(&serialized)
+        .map_err(|e| e.to_string())
+        .unwrap()
+        .as_object()
+    {
         None => panic!("Impossible"),
-        Some(o) => o.to_owned()
+        Some(o) => o.to_owned(),
     };
     _ = deserialized.insert("format".to_string(), Value::String(fmt));
-    let serialized = serde_json::to_string(&deserialized).map_err(|e| e.to_string()).unwrap();
+    let serialized = serde_json::to_string(&deserialized)
+        .map_err(|e| e.to_string())
+        .unwrap();
     write!(savefile, "{serialized}").map_err(|e| e.to_string())?;
     Ok(())
 }

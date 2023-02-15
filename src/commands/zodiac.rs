@@ -78,7 +78,7 @@ Run `help zodiac` for more details.\n"
                 None => {
                     res.push_str(&format!("{arg}: Not found / Invalid date\n"));
                     continue;
-                },
+                }
                 Some(d) => d,
             };
             if person.birthday.is_empty() {

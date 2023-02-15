@@ -63,8 +63,10 @@ fn list_command(_bot: &mut structs::chatbot::ChatBot, args: &[&str]) -> String {
         result.push_str(&res_later);
     }
     if !res_errors.is_empty() {
-        result.push_str(&format!("\nThere were some errors found in the database file, which are given below. These are possibly due to the dates being in the wrong format or invalid.\n\
-Please update them to the correct format (either `dd-mm-yyyy` or `dd-mm`) by using the add command.\n\n{res_errors}"));
+        result.push_str(&format!(
+            "\nThere were some errors found in the database file, which are given below.\n\
+These are possibly due to the dates being in the wrong format or invalid.\n\n{res_errors}"
+        ));
     }
 
     if result.is_empty() && !display_all {

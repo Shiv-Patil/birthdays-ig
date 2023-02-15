@@ -9,7 +9,7 @@ pub fn get_command() -> structs::command::Command {
         "quiz", alias,
         "Ask the birthday of a random person to test if you know their birthday",
         &format!("This command will choose a random person from the saved birthdays.\n\
-you have to input the birthday of the person based on your memory. This will check if you know your birthdays :)\n\
+You have to input the birthday of the person based on your memory. This will check if you know your birthdays :)\n\
 alias: {}", alias.join(", ")),
         quiz_command
     )
@@ -20,6 +20,7 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
         Ok(p) => p,
         Err((e, _)) => return format!("\nError: {e}\n"),
     };
+    let format = if fmt == "%0m-%0d" { "mm-dd" } else { "dd-mm" };
 
     let mut chosen = false;
     let mut person = String::from("Adonis");
@@ -58,7 +59,7 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
                 let bday_input = match common::parse_birthday(line, &fmt) {
                     Ok(d) => d,
                     Err(_e) => {
-                        println!("Please enter date correctly (dd-mm or dd-mm-yyyy)");
+                        println!("Please enter date correctly ({format})");
                         continue;
                     }
                 };

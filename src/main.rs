@@ -17,6 +17,7 @@ fn main() {
     chat_bot.register_command(commands::wish::get_command());
     chat_bot.register_command(commands::zodiac::get_command());
     chat_bot.register_command(commands::field::get_command());
+    chat_bot.register_command(commands::format::get_command());
 
     match chat_bot.run() {
         Ok(()) => {}

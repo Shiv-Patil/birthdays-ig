@@ -37,7 +37,7 @@ fn write_csv(mut name: String) -> Result<String, String> {
         return Err("A file with that filename already exists.".to_string());
     }
 
-    let (people, _fmt) = match common::read_people() {
+    let (people, fmt) = match common::read_people() {
         Ok(p) => p,
         Err((e, fmt)) => {
             if e.kind() == ErrorKind::NotFound {
@@ -54,6 +54,9 @@ fn write_csv(mut name: String) -> Result<String, String> {
     let savefile = File::create(path).map_err(|e| e.to_string())?;
     let mut writer = csv::Writer::from_writer(savefile);
 
+    writer
+        .write_record([format!("format={fmt}"), "".to_string()])
+        .map_err(|e| e.to_string())?;
     for (name, person) in people.iter() {
         writer
             .write_record([name, &person.birthday])
