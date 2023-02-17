@@ -20,7 +20,6 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
         Ok(p) => p,
         Err((e, _)) => return format!("\nError: {e}\n"),
     };
-    let format = if fmt == "%0m-%0d" { "mm-dd" } else { "dd-mm" };
 
     let mut chosen = false;
     let mut person = String::from("Adonis");
@@ -59,7 +58,7 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
                 let bday_input = match common::parse_birthday(line, &fmt) {
                     Ok(d) => d,
                     Err(_e) => {
-                        println!("Please enter date correctly ({format})");
+                        println!("Please enter date correctly ({})", common::get_format_from_fmt(&fmt));
                         continue;
                     }
                 };

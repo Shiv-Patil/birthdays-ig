@@ -186,3 +186,7 @@ pub fn change_format(bday: String) -> String {
         .collect::<Vec<String>>()
         .join("-")
 }
+
+pub fn get_format_from_fmt(fmt: &String) -> &str {
+    if fmt == "%0m-%0d" { "mm-dd" } else { "dd-mm" }
+}

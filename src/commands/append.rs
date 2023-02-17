@@ -26,8 +26,18 @@ fn add_person(name: &str, birthday: &str) -> Result<String, String> {
             if e.kind() == ErrorKind::NotFound {
                 (HashMap::new(), fmt)
             } else {
-                return Err("The database file is corrupted. You can try to either fix birthdays.json or delete it and try again.".to_string());
+                return Err(e.to_string());
             }
+        }
+    };
+
+    _ = match common::parse_birthday(&birthday, &fmt) {
+        Ok(_) => (),
+        Err(_) => {
+            return Err(format!(
+                "Invalid date entered. Use format {}",
+                common::get_format_from_fmt(&fmt)
+            ))
         }
     };
 

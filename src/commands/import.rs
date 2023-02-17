@@ -65,7 +65,7 @@ fn read_csv(path: &str) -> Result<String, String> {
             if e.kind() == ErrorKind::NotFound {
                 (HashMap::new(), fmt)
             } else {
-                return Err("The database file is corrupted. You can try to either fix birthdays.json or delete it and try again.".to_string());
+                return Err(e.to_string());
             }
         }
     };
