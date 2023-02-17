@@ -168,3 +168,21 @@ pub fn clear_terminal() {
 pub fn clear_terminal() {
     clear_terminal_ansi();
 }
+
+pub fn change_format_bulk(people: HashMap<String, Person>) -> HashMap<String, Person> {
+    people
+        .into_iter()
+        .map(|(n, mut d)| {
+            d.birthday = change_format(d.birthday);
+            (n, d)
+        })
+        .collect()
+}
+
+pub fn change_format(bday: String) -> String {
+    bday.split('-')
+        .rev()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>()
+        .join("-")
+}

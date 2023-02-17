@@ -59,7 +59,7 @@ fn read_csv(path: &str) -> Result<String, String> {
         .has_headers(false)
         .from_reader(reader);
 
-    let (mut people, mut fmt) = match common::read_people() {
+    let (mut people, fmt) = match common::read_people() {
         Ok(p) => p,
         Err((e, fmt)) => {
             if e.kind() == ErrorKind::NotFound {
@@ -92,8 +92,9 @@ fn read_csv(path: &str) -> Result<String, String> {
         .map(|s| s.to_string())
         .collect::<Vec<String>>();
 
+    let mut newfmt = fmt.to_string();
     if header[0] == "format" && (header[1] == "%0d-%0m" || header[1] == "%0m-%0d") {
-        fmt = header[1].to_string();
+        newfmt = header[1].to_string();
     } else {
         entries.push(headers);
         eprintln!("\nFormat not specified in csv. Defaulting to current format.");
@@ -101,9 +102,13 @@ fn read_csv(path: &str) -> Result<String, String> {
 
     for record in entries {
         let name = record[0].trim().to_string();
-        let birthday = record[1].trim().to_string();
-        match common::parse_birthday(&birthday, &fmt) {
-            Ok(_d) => (),
+        let mut birthday = record[1].trim().to_string();
+        match common::parse_birthday(&birthday, &newfmt) {
+            Ok(_) => {
+                if newfmt != fmt {
+                    birthday = common::change_format(birthday)
+                }
+            }
             Err(_) => {
                 errors.push_str(&format!("{name}: {birthday}\n"));
             }

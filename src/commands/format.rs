@@ -27,19 +27,7 @@ fn change_format(newfmt: String, change: bool) -> Result<String, String> {
     }
 
     if change {
-        people = people
-            .into_iter()
-            .map(|(n, mut d)| {
-                d.birthday = d
-                    .birthday
-                    .split('-')
-                    .rev()
-                    .map(|s| s.to_string())
-                    .collect::<Vec<String>>()
-                    .join("-");
-                (n, d)
-            })
-            .collect();
+        people = common::change_format_bulk(people);
     }
 
     common::write_people(&people, newfmt)?;
