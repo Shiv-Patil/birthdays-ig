@@ -58,7 +58,10 @@ fn quiz_command(bot: &mut structs::chatbot::ChatBot, _args: &[&str]) -> String {
                 let bday_input = match common::parse_birthday(line, &fmt) {
                     Ok(d) => d,
                     Err(_e) => {
-                        println!("Please enter date correctly ({})", common::get_format_from_fmt(&fmt));
+                        println!(
+                            "Please enter date correctly ({})",
+                            common::get_format_from_fmt(&fmt)
+                        );
                         continue;
                     }
                 };

@@ -31,7 +31,7 @@ fn add_person(name: &str, birthday: &str) -> Result<String, String> {
         }
     };
 
-    _ = match common::parse_birthday(&birthday, &fmt) {
+    match common::parse_birthday(birthday, &fmt) {
         Ok(_) => (),
         Err(_) => {
             return Err(format!(
